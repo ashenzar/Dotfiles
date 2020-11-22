@@ -1,3 +1,3 @@
-xbacklight -set 25
-feh --no-fehbg --bg-fill ~/Imágenes/lain.png
-picom -b
+xbacklight -set 20
+feh --no-fehbg --bg-fill $XDG_CONFIG_DIRS/img/lain.png
+picom -CGb
