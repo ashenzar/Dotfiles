@@ -1,181 +1,292 @@
-# Copyright (c) 2010 Aldo Cortesi
-# Copyright (c) 2010, 2014 dequis
-# Copyright (c) 2012 Randall Ma
-# Copyright (c) 2012-2014 Tycho Andersen
-# Copyright (c) 2012 Craig Barnes
-# Copyright (c) 2013 horsik
-# Copyright (c) 2013 Tao Sauvage
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in
-# all copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
+# -*- coding: utf-8 -*-
+import os
+import socket
+import subprocess
 
-from typing import List  # noqa: F401
-
-from libqtile import bar, layout, widget
+from libqtile import bar, hook, layout, qtile
 from libqtile.config import Click, Drag, Group, Key, Screen
 from libqtile.lazy import lazy
-#from libqtile.utils import guess_terminal
+from libqtile.log_utils import logger
+from libqtile.widget import (Clock, CurrentLayout, CurrentLayoutIcon,
+                             GroupBox, Notify, PulseVolume, Prompt, Sep,
+                             Spacer, Systray, TaskList, TextBox)
 
-mod = "mod4"
-terminal = "st"
+try:
+    import aiomanhole
+except ImportError:
+    aiomanhole = None
 
-keys = [
-    Key([mod], "space", lazy.layout.next(), desc="Switch to next"),
-    Key([mod, "shift"], "space", lazy.layout.rotate(), desc="Rotate window"),
-    Key([mod], "Return", lazy.spawn(terminal), desc="Launch terminal"),
-    Key([mod], "Tab", lazy.next_layout(), desc="Toggle between layouts"),
-    Key([mod], "w", lazy.window.kill(), desc="Kill focused window"),
+DEBUG = os.environ.get("DEBUG")
 
-    Key([mod, "control"], "r", lazy.restart(), desc="Restart qtile"),
-    Key([mod, "control"], "q", lazy.shutdown(), desc="Shutdown qtile"),
-    Key([mod], "r", lazy.spawncmd()),
+GREY = "#222222"
+DARK_GREY = "#111111"
+BLUE = "#007fdf"
+DARK_BLUE = "#002a4a"
+ORANGE = "#dd6600"
+DARK_ORANGE = "#371900"
 
-    # Example bsp layout config
-    Key([mod], "j", lazy.layout.down()),
-    Key([mod], "k", lazy.layout.up()),
-    Key([mod], "h", lazy.layout.left()),
-    Key([mod], "l", lazy.layout.right()),
 
-    Key([mod, "shift"], "j", lazy.layout.shuffle_down()),
-    Key([mod, "shift"], "k", lazy.layout.shuffle_up()),
-    Key([mod, "shift"], "h", lazy.layout.shuffle_left()),
-    Key([mod, "shift"], "l", lazy.layout.shuffle_right()),
+def window_to_previous_column_or_group(qtile):
+    layout = qtile.current_group.layout
+    group_index = qtile.groups.index(qtile.current_group)
+    previous_group_name = qtile.current_group.get_previous_group().name
 
-    Key([mod, "mod1"], "j", lazy.layout.flip_down()),
-    Key([mod, "mod1"], "k", lazy.layout.flip_up()),
-    Key([mod, "mod1"], "h", lazy.layout.flip_left()),
-    Key([mod, "mod1"], "l", lazy.layout.flip_right()),
+    if layout.name != "columns":
+        qtile.current_window.togroup(previous_group_name)
+    elif layout.current == 0 and len(layout.cc) == 1:
+        if group_index != 0:
+            qtile.current_window.togroup(previous_group_name)
+    else:
+        layout.cmd_shuffle_left()
 
-    Key([mod, "control"], "j", lazy.layout.grow_down()),
-    Key([mod, "control"], "k", lazy.layout.grow_up()),
-    Key([mod, "control"], "h", lazy.layout.grow_left()),
-    Key([mod, "control"], "l", lazy.layout.grow_right()),
 
-    Key([mod, "shift"], "n", lazy.layout.normalize()),
-    Key([mod, "shift"], "Return", lazy.layout.toggle_split()),
-]
+def window_to_next_column_or_group(qtile):
+    layout = qtile.current_group.layout
+    group_index = qtile.groups.index(qtile.current_group)
+    next_group_name = qtile.current_group.get_next_group().name
 
-groups = [Group(i) for i in "123456789"]
+    if layout.name != "columns":
+        qtile.current_window.togroup(next_group_name)
+    elif layout.current + 1 == len(layout.columns) and len(layout.cc) == 1:
+        if group_index + 1 != len(qtile.groups):
+            qtile.current_window.togroup(next_group_name)
+    else:
+        layout.cmd_shuffle_right()
 
-for i in groups:
-    keys.extend([
-        # mod1 + letter of group = switch to group
-        Key([mod], i.name, lazy.group[i.name].toscreen(),
-            desc="Switch to group {}".format(i.name)),
 
-        # mod1 + shift + letter of group = switch to & move focused window to group
-        Key([mod, "shift"], i.name, lazy.window.togroup(i.name, switch_group=True),
-            desc="Switch to & move focused window to group {}".format(i.name)),
-        # Or, use below if you prefer not to switch to that group.
-        # # mod1 + shift + letter of group = move focused window to group
-        # Key([mod, "shift"], i.name, lazy.window.togroup(i.name),
-        #     desc="move focused window to group {}".format(i.name)),
-    ])
+def window_to_previous_screen(qtile):
+    i = qtile.screens.index(qtile.current_screen)
+    if i != 0:
+        group = qtile.screens[i - 1].group.name
+        qtile.current_window.togroup(group)
 
-layouts = [
-    layout.Max(),
-    layout.Stack(num_stacks=2),
-    # Try more layouts by unleashing below layouts.
-    layout.Bsp(),
-    layout.Columns(),
-    layout.Matrix(),
-    layout.MonadTall(),
-    layout.MonadWide(),
-    layout.RatioTile(),
-    layout.Tile(),
-    layout.TreeTab(),
-    layout.VerticalTile(),
-    layout.Zoomy(),
-]
 
-widget_defaults = dict(
-    font='sans',
-    fontsize=12,
-    padding=3,
-)
-extension_defaults = widget_defaults.copy()
+def window_to_next_screen(qtile):
+    i = qtile.screens.index(qtile.current_screen)
+    if i + 1 != len(qtile.screens):
+        group = qtile.screens[i + 1].group.name
+        qtile.current_window.togroup(group)
 
-screens = [
-    Screen(
-        top=bar.Bar(
-            [
-                widget.CurrentLayout(),
-                widget.GroupBox(),
-                widget.Prompt(),
-                widget.WindowName(),
-                widget.Chord(
-                    chords_colors={
-                        'launch': ("#ff0000", "#ffffff"),
-                    },
-                    name_transform=lambda name: name.upper(),
-                ),
-#                widget.TextBox("default config", name="default"),
-#                widget.TextBox("Press &lt;M-r&gt; to spawn", foreground="#d75f5f"),
-                widget.Systray(),
-                widget.Clock(format='%a %d-%m %I:%M'),
-#                widget.QuickExit(),
-            ],
-            24,
-        ),
-    ),
-]
 
-# Drag floating layouts.
-mouse = [
-    Drag([mod], "Button1", lazy.window.set_position_floating(),
-         start=lazy.window.get_position()),
-    Drag([mod], "Button3", lazy.window.set_size_floating(),
-         start=lazy.window.get_size()),
-    Click([mod], "Button2", lazy.window.bring_to_front())
-]
+def switch_screens(qtile):
+    i = qtile.screens.index(qtile.current_screen)
+    group = qtile.screens[i - 1].group
+    qtile.current_screen.set_group(group)
 
-dgroups_key_binder = None
-dgroups_app_rules = []  # type: List
-main = None  # WARNING: this is deprecated and will be removed soon
-follow_mouse_focus = True
-bring_front_click = False
-cursor_warp = False
-floating_layout = layout.Floating(float_rules=[
-    # Run the utility of `xprop` to see the wm class and name of an X client.
-    {'wmclass': 'confirm'},
-    {'wmclass': 'dialog'},
-    {'wmclass': 'download'},
-    {'wmclass': 'error'},
-    {'wmclass': 'file_progress'},
-    {'wmclass': 'notification'},
-    {'wmclass': 'splash'},
-    {'wmclass': 'toolbar'},
-    {'wmclass': 'confirmreset'},  # gitk
-    {'wmclass': 'makebranch'},  # gitk
-    {'wmclass': 'maketag'},  # gitk
-    {'wname': 'branchdialog'},  # gitk
-    {'wname': 'pinentry'},  # GPG key password entry
-    {'wmclass': 'ssh-askpass'},  # ssh-askpass
-])
-auto_fullscreen = True
-focus_on_window_activation = "smart"
 
-# XXX: Gasp! We're lying here. In fact, nobody really uses or cares about this
-# string besides java UI toolkits; you can see several discussions on the
-# mailing lists, GitHub issues, and other WM documentation that suggest setting
-# this string if your java app doesn't work correctly. We may as well just lie
-# and say that we're a working one by default.
-#
-# We choose LG3D to maximize irony: it is a 3D non-reparenting WM written in
-# java that happens to be on java's whitelist.
-wmname = "LG3D"
+def init_keys():
+    keys = [
+        # Movement
+        Key([mod], "h", lazy.layout.left(), desc="Move focus to left"),
+        Key([mod], "l", lazy.layout.right(), desc="Move focus to right"),
+        Key([mod], "j", lazy.layout.down(), desc="Move focus down"),
+        Key([mod], "k", lazy.layout.up(), desc="Move focus up"),
+
+        # Shuffling
+        Key([mod, "shift"], "h", lazy.layout.shuffle_left()),
+        Key([mod, "shift"], "l", lazy.layout.shuffle_right()),
+        Key([mod, "shift"], "j", lazy.layout.shuffle_down()),
+        Key([mod, "shift"], "k", lazy.layout.shuffle_up()),
+
+        # Grow
+        Key([mod, "control"], "h", lazy.layout.grow_left()),
+        Key([mod, "control"], "l", lazy.layout.grow_right()),
+        Key([mod, "control"], "j", lazy.layout.grow_down()),
+        Key([mod, "control"], "k", lazy.layout.grow_up()),
+        Key([mod], "n", lazy.layout.normalize()),
+
+        # Split in stacks
+        Key([mod, "shift"], "Return", lazy.layout.toggle_split()),
+
+        Key([mod], "space", lazy.next_layout()),
+
+        Key([mod], "f", lazy.window.toggle_floating()),
+        Key([mod], "b", lazy.window.bring_to_front()),
+        Key([mod], "s", lazy.layout.toggle_split()),
+
+        Key([mod], "semicolon", lazy.spawn("splatmoji type")),
+        Key([mod], "r", lazy.spawn("dmenu_run")),
+        Key([mod], "u", lazy.spawn(browser)),
+        Key([mod], "Return", lazy.spawn(terminal)),
+        Key([mod], "BackSpace", lazy.window.kill()),
+
+        Key([mod, "shift"], "r", lazy.restart()),
+        Key([mod, "shift"], "q", lazy.shutdown()),
+        Key([mod], "v", lazy.validate_config()),
+
+        Key([], "Print", lazy.spawn("gnome-screenshot -i")),
+        Key([mod], "Print", lazy.spawn("gnome-screenshot -p")),
+        Key([], "Scroll_Lock", lazy.spawn(screenlocker)),
+        Key([mod], "Delete", lazy.spawn("pactl set-sink-mute @DEFAULT_SINK@ toggle")),
+        Key([mod], "Prior", lazy.spawn("pactl set-sink-volume @DEFAULT_SINK@ +5%")),
+        Key([mod], "Next", lazy.spawn("pactl set-sink-volume @DEFAULT_SINK@ -5%")),
+        Key([mod], "Insert", lazy.spawn("spotify-dbus playpause")),
+        Key([mod], "End", lazy.spawn("spotify-dbus next")),
+        Key([mod], "Home", lazy.spawn("spotify-dbus previous")),
+
+        Key([mod], "Tab", lazy.layout.next()),
+        Key([mod, "shift"], "Tab", lazy.layout.previous()),
+    ]
+    if DEBUG:
+        keys += [
+            Key([mod], "Tab", lazy.layout.next()),
+            Key([mod, "shift"], "Tab", lazy.layout.previous()),
+            Key([mod, "shift"], "f", lazy.layout.flip()),
+            Key([mod, "shift"], "s", lazy.group["scratch"].dropdown_toggle("term"))
+        ]
+    return keys
+
+
+def init_mouse():
+    mouse = [Drag([mod], "Button1", lazy.window.set_position_floating(),
+                  start=lazy.window.get_position()),
+             Drag([mod], "Button3", lazy.window.set_size_floating(),
+                  start=lazy.window.get_size()),
+             Click([mod], "Button2", lazy.window.kill())]
+    if DEBUG:
+        mouse += [Drag([mod, "shift"], "Button1", lazy.window.set_position(),
+                       start=lazy.window.get_position())]
+    return mouse
+
+
+def init_groups():
+    def _inner(key, name):
+        keys.append(Key([mod], key, lazy.group[name].toscreen()))
+        keys.append(Key([mod, "shift"], key, lazy.window.togroup(name)))
+        return Group(name)
+
+    groups = [(str(i), "0" + str(i)) for i in range(1, 10)]
+    groups += [("0", "10")]
+    groups = [_inner(*i) for i in groups]
+
+    if DEBUG:
+        from libqtile.config import DropDown, ScratchPad
+        dropdowns = [DropDown("term", terminal, x=0.125, y=0.25,
+                              width=0.75, height=0.5, opacity=0.8,
+                              on_focus_lost_hide=True)]
+        groups.append(ScratchPad("scratch", dropdowns))
+    return groups
+
+
+def init_floating_layout():
+    return layout.Floating(border_focus=ORANGE)
+
+
+def init_layouts():
+    margin = 0
+    if len(qtile.conn.pseudoscreens) > 1:
+        margin = 8
+    kwargs = dict(margin=margin, border_width=1, border_normal=DARK_GREY,
+                  border_focus=BLUE, border_focus_stack=ORANGE)
+    layouts = [
+        layout.Max(),
+        layout.Bsp(),
+        layout.Tile()
+#        layout.Columns(num_columns=2, grow_amount=5, **kwargs)
+    ]
+
+    if DEBUG:
+        layouts += [
+            floating_layout, layout.Zoomy(), layout.Tile(), layout.Matrix(),
+            layout.TreeTab(), layout.MonadTall(margin=10), layout.RatioTile(),
+            layout.Stack()
+        ]
+    return layouts
+
+
+def init_widgets():
+    widgets = [
+        CurrentLayoutIcon(scale=0.6, padding=8),
+        GroupBox(fontsize=8, padding=4, borderwidth=1, urgent_border=DARK_BLUE,
+                 disable_drag=True, highlight_method="block",
+                 this_screen_border=DARK_BLUE, other_screen_border=DARK_ORANGE,
+                 this_current_screen_border=BLUE,
+                 other_current_screen_border=ORANGE),
+
+        TextBox(text="◤", fontsize=45, padding=-1, foreground=DARK_GREY,
+                background=GREY),
+
+        TaskList(borderwidth=0, highlight_method="block", background=GREY,
+                 border=DARK_GREY, urgent_border=DARK_BLUE),
+
+        Systray(background=GREY),
+        TextBox(text="◤", fontsize=45, padding=-1,
+                foreground=GREY, background=DARK_GREY),
+        Notify(fmt=" 🔥 {} "),
+        PulseVolume(fmt=" {}", emoji=True, volume_app="pavucontrol"),
+        PulseVolume(volume_app="pavucontrol"),
+        Clock(format=" ⏱ %H:%M  <span color='#666'>%A %d-%m-%Y</span>  ")
+    ]
+#    if os.path.isdir("/sys/module/battery"):
+#        widgets.insert(-1, Battery(format=" {char} {percent:2.0%} ",
+#                                   charge_char="⚡", discharge_char="🔋",
+#                                   full_char="⚡", unknown_char="⚡",
+#                                   empty_char="⁉️ ", update_interval=2,
+#                                   show_short_text=False,
+#                                   default_text=""))
+#        widgets.insert(-1, Battery(fmt="<span color='#666'>{}</span> ",
+#                                   format="{hour:d}:{min:02d}",
+#                                   update_interval=2, show_short_text=True,
+#                                   default_text=""))
+    if DEBUG:
+        widgets += [Sep(), CurrentLayout()]
+    return widgets
+
+
+@hook.subscribe.client_new
+def set_floating(window):
+    normal_hints = window.window.get_wm_normal_hints()
+    if normal_hints and normal_hints["max_width"]:
+        window.floating = True
+        return
+
+    floating_classes = ("nm-connection-editor", "pavucontrol")
+    try:
+        if window.window.get_wm_class()[0] in floating_classes:
+            window.floating = True
+    except IndexError:
+        pass
+
+
+@hook.subscribe.screen_change
+def set_screens(event):
+    logger.debug("Handling event: {}".format(event))
+    subprocess.run(["autorandr", "--change"])
+    qtile.restart()
+
+
+@hook.subscribe.startup_complete
+def set_logging():
+    if DEBUG:
+        qtile.cmd_debug()
+
+
+if aiomanhole:
+    @hook.subscribe.startup_complete
+    def set_manhole():
+        aiomanhole.start_manhole(port=7113, namespace={"qtile": qtile})
+
+
+if __name__ in ["config", "__main__"]:
+    local_bin = os.path.expanduser("~") + "/.local/bin"
+    if local_bin not in os.environ["PATH"]:
+        os.environ["PATH"] = "{}:{}".format(local_bin, os.environ["PATH"])
+
+    mod = "mod4"
+    browser = "falkon"
+    terminal = "st"
+    screenlocker = "i3lock -d"
+    hostname = socket.gethostname()
+    cursor_warp = False
+    focus_on_window_activation = "never"
+
+    keys = init_keys()
+    mouse = init_mouse()
+    groups = init_groups()
+    floating_layout = init_floating_layout()
+    layouts = init_layouts()
+    widgets = init_widgets()
+    bar = bar.Bar(widgets=widgets, size=22, opacity=1)
+    screens = [Screen(top=bar, wallpaper="~/.background.jpg")]
+    widget_defaults = {"font": "DejaVu", "fontsize": 11, "padding": 2,
+                       "background": DARK_GREY}
