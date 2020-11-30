@@ -7,7 +7,12 @@ set_from_resource $cursor     i3wm.cursorColor #101414
 set_from_resource $color0     i3wm.color0      #000000
 set_from_resource $color1     i3wm.color1      #111111
 set_from_resource $color2     i3wm.color2      #222222
-set_from_resource $color3     i3wm.color3      #333333
+set_from_resource $color3     i3wm.color3      #222222
+set_from_resource $color4     i3wm.color4      #333333
+set_from_resource $color5     i3wm.color5      #333333
+set_from_resource $color6     i3wm.color6      #333333
+set_from_resource $color7     i3wm.color7      #333333
+set_from_resource $color8     i3wm.color8      #333333
 
 # Font
 font pango:Source Code Pro 10
@@ -34,16 +39,19 @@ bindsym XF86AudioMicMute exec --no-startup-id\
 hide_edge_borders smart
 focus_wrapping yes
 workspace_auto_back_and_forth yes
+title_align center
+default_border pixel 1
+default_floating_border pixel 1
 
-for_window [class="st"] border pixel 1
+for_window [title="st"] border pixel 1
 
 # Colors
 # class                 border  backgr. text    indicator child_border
-client.focused          $color3 $background $foreground $color1 $color3
-client.focused_inactive $color1 $background $foreground $color1 $color1
-client.unfocused        $color1 $background $foreground $color1 $color1
-client.urgent           $color1 $background $foreground $color1 $color1
-client.placeholder      $color1 $background $foreground $color1 $color1
+client.focused          $color8 $background $foreground $color0 $color8
+client.focused_inactive $color0 $background $foreground $color0 $color0
+client.unfocused        $color0 $background $foreground $color0 $color0
+client.urgent           $color0 $background $foreground $color0 $color0
+client.placeholder      $color0 $background $foreground $color0 $color0
 
 client.background       $background
 
@@ -62,7 +70,8 @@ set $screenshot gnome-screenshot
 # Applications
 bindsym $mod+Return exec --no-startup-id $term
 bindsym $mod+u      exec --no-startup-id $browser
-bindsym $mod+Print       exec --no-startup-id $screenshot
+bindsym $mod+Print  exec --no-startup-id $screenshot
+bindsym $mod+y      exec --no-startup-id telegram-desktop
 
 # Key bindings
 floating_modifier $mod
@@ -170,10 +179,10 @@ bar {
         statusline $foreground
         separator  #666666
 
-        focused_workspace  $color3 $background $foreground
-        active_workspace   $color1 $background $foreground
-        inactive_workspace $color1 $background $foreground
-        urgent_workspace   $color1 $background $foreground
-        binding_mode       $color1 $background $foreground
+        focused_workspace  $color8 $background $foreground
+        active_workspace   $color0 $background $foreground
+        inactive_workspace $color0 $background $foreground
+        urgent_workspace   $color0 $background $foreground
+        binding_mode       $color0 $background $foreground
     }
 }
