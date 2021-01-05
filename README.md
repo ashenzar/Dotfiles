@@ -1,5 +1,7 @@
 # dotfiles
 
+![alt text](https://github.com/dispelundead/dotfiles/blob/main/img/preview.png?raw=true)
+
 OS:		Debian bullseye GNU/Linux
 
 WM:		bspwm
