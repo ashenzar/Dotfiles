@@ -1,9 +1,14 @@
 # dotfiles
 
-WM: i3-gaps
-Compositor: picom
-Bar: i3bar
-Bar status: i3status
-Text editor: vim
+OS:		Debian bullseye GNU/Linux
 
-Feel free to pick anything you like
+WM:		bspwm
+
+Compositor:	picom
+
+Bar:		polybar
+
+Terminal:	URxvt
+
+
+Feel free to pick anything you like :P

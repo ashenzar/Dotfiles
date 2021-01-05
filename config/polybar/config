@@ -1,0 +1,137 @@
+[colors]
+background	= ${xrdb:background}
+foreground	= ${xrdb:foreground}
+
+black		= ${xrdb:color0}
+white		= ${xrdb:color15}
+
+[bar/main]
+monitor		= VGA1
+
+height		= 27
+width		= 336
+
+offset-y	= 4
+offset-x	= 4
+
+fixed-center	= true
+module-margin	= 2
+
+background	= ${colors.background}
+foreground	= ${colors.foreground}
+
+font-0		= Iosevka Extended:size=9;2
+font-1		= Siji;2
+
+override-redirect = false
+wm-restack	= bspwm
+
+dpi		= 0
+
+cursor-click	= pointer
+
+[bar/left]
+inherit		= bar/main
+
+modules-center	= bspwm
+
+[bar/center]
+inherit		= bar/main
+
+offset-x	= 344
+
+locale		= es_SV.UTF-8
+modules-center	= date
+
+[bar/right]
+inherit		= bar/main
+
+offset-x	= 684
+
+modules-center	= cpu memory temperature alsa
+
+[module/xwindow]
+type		= internal/xwindow
+label		= %title:0:32:...%
+
+[module/date]
+type		= internal/date
+interval	= 5
+
+date		= %a%e, %b
+time		= %H:%M
+
+;format-prefix	= " "
+label		= %date%    %time%
+
+[module/bspwm]
+type		= internal/bspwm
+pin-workspaces	= true
+
+ws-icon-0 = 1;
+ws-icon-1 = 2;
+ws-icon-2 = 3;
+ws-icon-3 = 4;
+ws-icon-4 = 5;
+ws-icon-5 = 6;
+ws-icon-6 = 7;VII
+ws-icon-7 = 8;VIII
+ws-icon-8 = 9;IX
+ws-icon-9 = 10;X
+ws-icon-default = 0
+
+label-focused	= %icon%
+label-focused-background = ${colors.black}
+label-focused-padding = 2
+
+label-occupied	= %icon%
+label-occupied-padding = 2
+
+label-urgent	= %icon%!
+label-urgent-background = ${colors.background}
+label-urgent-padding = 2
+
+label-empty	= %icon%
+label-empty-foreground = ${colors.white}
+label-empty-padding = 2
+
+[module/alsa]
+type		= internal/alsa
+
+format-volume	= <label-volume> <bar-volume>
+label-volume	= VOL
+
+format-muted-prefix = " "
+label-muted	= muted
+
+bar-volume-width = 4
+bar-volume-indicator = |
+bar-volume-fill	     = -
+bar-volume-empty     = -
+
+[module/memory]
+type		= internal/memory
+interval	= 5
+format-prefix	= " "
+label		= %percentage_used%%
+
+[module/cpu]
+type		= internal/cpu
+interval	= 5
+format-prefix	= " "
+label		= %percentage:2%%
+
+[module/temperature]
+type		= internal/temperature
+thermal-zone	= 0
+warn-temperature = 60
+
+format		= <ramp> <label>
+format-warn	= <ramp> <label-warn>
+
+label		= %temperature-c%
+label-warn	= %temperature-c%
+
+ramp-0		= 
+ramp-1		= 
+ramp-2		= 
