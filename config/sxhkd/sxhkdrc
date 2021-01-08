@@ -17,6 +17,12 @@ super + Escape
 super + u
 	firefox
 
+super + i
+	telegram
+
+super + p
+	cd $HOME/Imágenes && scrot
+
 #
 # bspwm hotkeys
 #

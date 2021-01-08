@@ -20,8 +20,9 @@ module-margin	= 2
 background	= ${colors.background}
 foreground	= ${colors.foreground}
 
-font-0		= Iosevka Extended:size=9;2
+;font-2		= Iosevka Extended:size=9;2
 font-1		= Siji;2
+font-0		= Hack Nerd Font:size=9;2
 
 override-redirect = false
 wm-restack	= bspwm
@@ -41,7 +42,8 @@ inherit		= bar/main
 offset-x	= 344
 
 locale		= es_SV.UTF-8
-modules-center	= date
+modules-center	= date spotify
+module-margin	= 0
 
 [bar/right]
 inherit		= bar/main
@@ -56,13 +58,14 @@ label		= %title:0:32:...%
 
 [module/date]
 type		= internal/date
-interval	= 5
+interval	= 2
 
 date		= %a%e, %b
 time		= %H:%M
 
+format-padding = 2
 ;format-prefix	= " "
-label		= %date%    %time%
+label		= %date%  %time%
 
 [module/bspwm]
 type		= internal/bspwm
@@ -70,10 +73,10 @@ pin-workspaces	= true
 
 ws-icon-0 = 1;
 ws-icon-1 = 2;
-ws-icon-2 = 3;
+ws-icon-2 = "3; "
 ws-icon-3 = 4;
 ws-icon-4 = 5;
-ws-icon-5 = 6;
+ws-icon-5 = 6;♥
 ws-icon-6 = 7;VII
 ws-icon-7 = 8;VIII
 ws-icon-8 = 9;IX
@@ -101,7 +104,7 @@ type		= internal/alsa
 format-volume	= <label-volume> <bar-volume>
 label-volume	= VOL
 
-format-muted-prefix = " "
+format-muted-prefix = "婢 "
 label-muted	= muted
 
 bar-volume-width = 4
@@ -111,13 +114,13 @@ bar-volume-empty     = -
 
 [module/memory]
 type		= internal/memory
-interval	= 5
+interval	= 2
 format-prefix	= " "
 label		= %percentage_used%%
 
 [module/cpu]
 type		= internal/cpu
-interval	= 5
+interval	= 2
 format-prefix	= " "
 label		= %percentage:2%%
 
@@ -135,3 +138,11 @@ label-warn	= %temperature-c%
 ramp-0		= 
 ramp-1		= 
 ramp-2		= 
+
+[module/spotify]
+type		= custom/script
+exec		= $HOME/.config/polybar/spotify.sh
+click-left	= playerctl -p spotify play-pause
+tail		= false
+interval	= 2
+format-padding	= 1

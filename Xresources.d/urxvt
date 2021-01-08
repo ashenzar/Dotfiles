@@ -1,9 +1,9 @@
 !! URxvt Appearance
-URxvt.font: xft:Iosevka Extended:style=Regular:size=9
-URxvt.boldFont: xft:Iosevka Extended:style=Bold:size=9
-URxvt.italicFont: xft:Iosevka Extended:style=Italic:size=9
-URxvt.boldItalicFont: xft:Iosevka Extended:style=Bold Italic:size=9
-URxvt.letterSpace: 1
+URxvt.font: xft:Hack Nerd Font:style=Regular:size=9
+URxvt.boldFont: xft:Hack Nerd Font:style=Bold:size=9
+URxvt.italicFont: xft:Hack Nerd Font:style=Italic:size=9
+URxvt.boldItalicFont: xft:Hack Nerd Font:style=Bold Italic:size=9
+URxvt.letterSpace: 0
 URxvt.lineSpace: 0
 URxvt.geometry: 92x24
 URxvt.internalBorder: 24
