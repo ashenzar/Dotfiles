@@ -8,7 +8,7 @@ super + Return
 
 # program launcher
 super + @space
-	rofi -show run
+	rofi -modi run -show drun -show-icons
 
 # make sxhkd reload its configuration files:
 super + Escape
@@ -21,7 +21,7 @@ super + i
 	telegram
 
 super + p
-	cd $HOME/Imágenes && scrot
+	gnome-screenshot -a
 
 #
 # bspwm hotkeys
