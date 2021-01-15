@@ -16,6 +16,9 @@ pgrep -x urxvtd > /dev/null || urxvtd --quiet --opendisplay --fork --mlock
 
 pgrep -x urserver > /dev/null || cd /opt/urserver/ && ./urserver --daemon
 
+killall --quiet dunst
+dunst &
+
 bspc monitor VGA1 -d 1 2 3 4 5 6
 
 bspc config border_width         0
@@ -40,11 +43,12 @@ bspc config gapless_monocle      false
 #bspc rule -a xfce4-notes floating=on
 #bspc rule -a Gimp desktop='^8' state=floating follow=on
 #bspc rule -a quassel desktop=^6 follow=on
-bspc rule -a URxvt desktop='^1' follow=on
-bspc rule -a Firefox desktop='^2' follow=on
-bspc rule -a Telegram desktop='^3' follow=on
-bspc rule -a winefile desktop='^4' follow=on
-bspc rule -a Spotify desktop='^5' follow=on
+bspc rule -a URxvt	desktop='^1' follow=on
+bspc rule -a TelegramDesktop	desktop='^2' follow=on
+bspc rule -a Firefox-esr	desktop='^3' follow=on
+bspc rule -a Wine	desktop='^4' follow=on
+bspc rule -a vlc	desktop='^5' follow=on
+bspc rule -a Spotify	desktop='^6' follow=on
 #bspc rule -a mplayer2 state=floating
 #bspc rule -a Kupfer.py focus=on
 #bspc rule -a Screenkey manage=off

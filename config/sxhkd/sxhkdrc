@@ -20,8 +20,26 @@ super + u
 super + i
 	telegram
 
-super + p
+Print
+	gnome-screenshot
+
+super + Print
 	gnome-screenshot -a
+
+super + r
+	trad
+
+XF86AudioPlay
+	playerctl play-pause
+
+XF86AudioStop
+	playerctl stop
+
+XF86AudioPrev
+	playerctl previous
+
+XF86AudioNext
+	playerctl next
 
 #
 # bspwm hotkeys
