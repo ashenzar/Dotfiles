@@ -1,54 +1,30 @@
 #! /bin/sh
 
 pgrep -x sxhkd > /dev/null || sxhkd &
+pgrep -x picom > /dev/null || picom &
+xrdb ~/.Xresources &
+xsetroot -cursor_name left_ptr &
+feh --bg-fill ~/Descargas/wall.jpg &
+pgrep -xf "polybar left" > /dev/null || polybar left &
+pgrep -xf "polybar center" > /dev/null || polybar center &
+pgrep -xf "polybar right" > /dev/null || polybar right &
+pgrep -x urxvtd > /dev/null || urxvtd &
 
-$HOME/.fehbg
-
-killall --quiet picom
-picom -b
-
-killall --quiet polybar
-polybar left	2>&1 | tee -a /tmp/polybar-left.log & disown
-polybar center	2>&1 | tee -a /tmp/polybar-center.log & disown
-polybar right	2>&1 | tee -a /tmp/polybar-right.log & disown
-
-pgrep -x urxvtd > /dev/null || urxvtd --quiet --opendisplay --fork --mlock
-
-pgrep -x urserver > /dev/null || cd /opt/urserver/ && ./urserver --daemon
-
-killall --quiet dunst
-dunst &
-
-bspc monitor VGA1 -d 1 2 3 4 5 6
+bspc monitor -d 1 2 3 4
 
 bspc config border_width         0
 bspc config window_gap           8
 
-bspc config top_padding		41
-bspc config left_padding	10
-bspc config right_padding	10
-bspc config bottom_padding	41
+bspc config top_padding		40
+bspc config left_padding	 8
+bspc config right_padding	 8
+bspc config bottom_padding	 8
 
-bspc config split_ratio          0.52
-#bspc config borderless_monocle   true
+bspc config split_ratio          0.5
+bspc config borderless_monocle   true
 bspc config gapless_monocle      false
 bspc config focus_follows_pointer true
 
-#bspc config pointer_modifier mod1
-#bspc config pointer_action3 resize_side
-#bspc config pointer_action3 resize_corner
-#bspc config pointer_action1 move
-
-#bspc rule -a Docky layer=above manage=on border=off focus=off locked=on
-#bspc rule -a xfce4-notes floating=on
-#bspc rule -a Gimp desktop='^8' state=floating follow=on
-#bspc rule -a quassel desktop=^6 follow=on
-bspc rule -a URxvt	desktop='^1' follow=on
-bspc rule -a TelegramDesktop	desktop='^2' follow=on
-bspc rule -a Firefox-esr	desktop='^3' follow=on
-bspc rule -a Wine	desktop='^4' follow=on
-bspc rule -a vlc	desktop='^5' follow=on
-bspc rule -a Spotify	desktop='^6' follow=on
-#bspc rule -a mplayer2 state=floating
-#bspc rule -a Kupfer.py focus=on
-#bspc rule -a Screenkey manage=off
+bspc rule -a URxvt desktop='^1' follow=on
+bspc rule -a TelegramDesktop desktop='^2' follow=on
+bspc rule -a Firefox-esr desktop='^3' follow=on

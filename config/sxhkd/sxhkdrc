@@ -8,38 +8,27 @@ super + Return
 
 # program launcher
 super + @space
-	rofi -modi run -show drun -show-icons
+	dmenu_run
 
 # make sxhkd reload its configuration files:
 super + Escape
 	pkill -USR1 -x sxhkd
 
-super + u
-	firefox
-
-super + i
+# telegram
+super + shift + t
 	telegram
 
+# firefox
+super + shift + f
+	firefox
+
+# screenshot
 Print
 	gnome-screenshot
 
+# area screenshot
 super + Print
 	gnome-screenshot -a
-
-super + r
-	trad
-
-XF86AudioPlay
-	playerctl play-pause
-
-XF86AudioStop
-	playerctl stop
-
-XF86AudioPrev
-	playerctl previous
-
-XF86AudioNext
-	playerctl next
 
 #
 # bspwm hotkeys

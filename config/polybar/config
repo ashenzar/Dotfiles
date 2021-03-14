@@ -4,15 +4,16 @@ foreground	= ${xrdb:foreground}
 
 black		= ${xrdb:color0}
 white		= ${xrdb:color15}
+gray		= #999999
+red		= #ff0000
 
 [bar/main]
 monitor		= VGA1
 
-height		= 27
-width		= 336
+height		= 25
 
-offset-y	= 4
-offset-x	= 4
+offset-y	= 10
+offset-x	= 10
 
 fixed-center	= true
 module-margin	= 2
@@ -20,36 +21,37 @@ module-margin	= 2
 background	= ${colors.background}
 foreground	= ${colors.foreground}
 
-font-1		= Siji;2
-font-0		= Hack Nerd Font:size=9;2
+font-0		= Iosevka Nerd Font:style=bold:size=8;3
 
 override-redirect = false
 wm-restack	= bspwm
 
+radius		= 13.0
 dpi		= 0
-
-cursor-click	= pointer
 
 [bar/left]
 inherit		= bar/main
 
-offset-x	= 344
-bottom		= true
+width		= 130
+
+locale		= es_SV.UTF-8
 modules-center	= bspwm
+module-margin-left	= 0
+module-margin-right	= 0
 
 [bar/center]
 inherit		= bar/main
 
-locale		= es_SV.UTF-8
-modules-center	= date spotify
-module-margin-left	= 0
+width		= 60
+offset-x	= 50%:-30
+modules-center	= date
 
 [bar/right]
 inherit		= bar/main
 
-offset-x	= 684
-
-modules-center	= cpu memory temperature alsa
+width		= 130
+offset-x	= 100%:-140
+modules-center	= temperature pulseaudio
 
 [module/xwindow]
 type		= internal/xwindow
@@ -62,52 +64,33 @@ interval	= 2
 date		= %a %e, %b
 time		= %H:%M
 
-label		= %date%  %time%
+label		= %time%
 
 [module/bspwm]
 type		= internal/bspwm
 pin-workspaces	= true
 
-ws-icon-0 = 1;
-ws-icon-1 = "2; "
-ws-icon-2 = 3;
-ws-icon-3 = 4;
-ws-icon-4 = 5;♥
-ws-icon-5 = 6;
-ws-icon-6 = 7;嗢
-ws-icon-7 = 8;VIII
-ws-icon-8 = 9;IX
-ws-icon-9 = 10;X
+ws-icon-0 = 1;ﲵ
+ws-icon-1 = 2;切
+ws-icon-2 = 3;
+ws-icon-3 = 4;阮
 ws-icon-default = 0
 
 label-focused	= %icon%
-label-focused-background = ${colors.black}
+label-focused-foreground = ${colors.white}
 label-focused-padding = 2
 
 label-occupied	= %icon%
+label-occupied-foreground = ${colors.gray}
 label-occupied-padding = 2
 
-label-urgent	= %icon%!
-label-urgent-background = ${colors.background}
+label-urgent	= %icon%
+label-urgent-foreground = ${colors.gray}
 label-urgent-padding = 2
 
 label-empty	= %icon%
-label-empty-foreground = ${colors.white}
+label-empty-foreground = ${colors.black}
 label-empty-padding = 2
-
-[module/alsa]
-type		= internal/alsa
-
-format-volume	= <label-volume> <bar-volume>
-label-volume	= VOL
-
-format-muted-prefix = "婢 "
-label-muted	= muted
-
-bar-volume-width = 4
-bar-volume-indicator = |
-bar-volume-fill	     = -
-bar-volume-empty     = -
 
 [module/memory]
 type		= internal/memory
@@ -124,7 +107,7 @@ label		= %percentage:2%%
 [module/temperature]
 type		= internal/temperature
 thermal-zone	= 0
-warn-temperature = 60
+warn-temperature = 50
 
 format		= <ramp> <label>
 format-warn	= <ramp> <label-warn>
@@ -133,8 +116,8 @@ label		= %temperature-c%
 label-warn	= %temperature-c%
 
 ramp-0		= 﨎
-ramp-1		= 﨎
-ramp-2		= 﨏
+ramp-0-foreground = ${colors.foreground}
+format-prefix	= " "
 
 [module/spotify]
 type		= custom/script
@@ -143,3 +126,20 @@ click-left	= playerctl -p spotify play-pause
 tail		= false
 interval	= 2
 format-prefix	= " "
+
+[module/pulseaudio]
+type = internal/pulseaudio
+
+format-volume = <label-volume> <bar-volume>
+label-volume =  %percentage%%
+label-volume-foreground = ${colors.foreground}
+
+label-muted =  mute
+label-muted-foreground = ${colors.gray}
+
+bar-volume-width = 1
+bar-volume-indicator = 
+bar-volume-fill = 
+bar-volume-empty = 
+
+; vim:ft=dosini
