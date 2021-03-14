@@ -1,6 +1,5 @@
-# Debian BSPWM
-
 ![preview](https://github.com/dispelundead/dotfiles/blob/main/img/screenshot.png?raw=true)
+# Debian BSPWM
 
 <p>
 <b>OS:</b>		Debian bullseye GNU/Linux<br>
