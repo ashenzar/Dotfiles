@@ -22,6 +22,10 @@ super + shift + t
 super + shift + f
 	firefox
 
+# spotify
+super + shift + s
+	spotify
+
 # screenshot
 Print
 	gnome-screenshot
@@ -29,6 +33,26 @@ Print
 # area screenshot
 super + Print
 	gnome-screenshot -a
+
+#
+# audio keys
+#
+
+# play
+XF86AudioPlay
+	playerctl play-pause
+
+# stop
+XF86AudioStop
+	playerctl stop
+
+# prev
+XF86AudioPrev
+	playerctl previous
+
+# next
+XF86AudioNext
+	playerctl next
 
 #
 # bspwm hotkeys
